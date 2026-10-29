@@ -7,14 +7,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
-
-class ErrorDetail(BaseModel):
-    code: str
-    message: str
-    trace_id: str
-
-class ErrorEnvelope(BaseModel):
-    error: ErrorDetail
+import pytest
+from app.schemas.common import ErrorEnvelope
 
 # ---- 契约样例路径：文档仓是唯一事实源，测试直接读文件 ----
 CONTRACT_FILE = (
