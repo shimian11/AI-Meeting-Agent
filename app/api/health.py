@@ -4,6 +4,8 @@ Docker healthcheck 与 Java 侧探活使用，要求 2 秒内响应。
 """
 from fastapi import APIRouter, Depends
 
+from app.schemas.health import HealthResponse
+
 #路由分组器
 router = APIRouter()
 
@@ -16,8 +18,8 @@ def get_service_info() -> dict:
         "env": s.env,
     }
 
-@router.get("/health")
-def health(info: dict = Depends(get_service_info)) -> dict:
+@router.get("/health", response_model=HealthResponse)
+def health(info: dict = Depends(get_service_info)) -> HealthResponse:
     """健康检查端点。
     info 参数由 Depends(get_service_info) 注入（≈ @Autowired 注入一个 Bean）。
     返回 dict 时 FastAPI 自动序列化为 JSON。
