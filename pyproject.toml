@@ -1,0 +1,36 @@
+[project]
+name = "ai-meeting-agent"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "langchain-openai>=1.7.3",
+    "loguru>=0.7.3",
+    "pydantic>=2.14.1",
+    "pydantic-settings>=2.16.1",
+    "pypdf>=6.21.2",
+    "qdrant-client>=1.20.0",
+    "sse-starlette>=3.6.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+# 依赖源改走清华镜像：避免直连 pypi.org 时的网络抖动/代理问题
+# 换源只改 url；备选阿里云 https://mirrors.aliyun.com/pypi/simple/
+[[tool.uv.index]]
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.170.12",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.1",
+    "respx>=0.23.1",
+]
+
+# pytest 配置：pythonpath 让测试能 import app 包（≈ Maven 的 test classpath 含 main 源码）
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
