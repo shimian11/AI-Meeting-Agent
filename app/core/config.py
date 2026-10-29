@@ -10,7 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="BANMA_", extra="ignore")
 
-    env: str = "local"                  # local | test | prod
+    env: str = "local"                  # local | tests | prod
     log_level: str = "INFO"             # DEBUG | INFO | WARNING | ERROR
 
     agent_token: str = "change-me"      # Java与Python 内部鉴权

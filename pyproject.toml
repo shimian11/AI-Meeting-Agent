@@ -30,7 +30,7 @@ dev = [
     "respx>=0.23.1",
 ]
 
-# pytest 配置：pythonpath 让测试能 import app 包（≈ Maven 的 test classpath 含 main 源码）
+# pytest 配置：pythonpath 让测试能 import app 包（≈ Maven 的 tests classpath 含 main 源码）
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
