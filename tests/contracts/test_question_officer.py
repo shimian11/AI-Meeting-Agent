@@ -18,7 +18,7 @@ def test_request_sample_passes():
     assert req.resume_url.startswith("http://minio:9000/")
 
 def test_success_response_sample_passes():
-    resp = QuestionOfficerRequest.model_validate(_load("question_officer_success.json"))
+    resp = QuestionOfficerResponse.model_validate(_load("question_officer_resp.json"))
     assert resp.intent == "GENERATE"
     assert resp.questions_source == "kb+resume"
     assert resp.resume_score == 78

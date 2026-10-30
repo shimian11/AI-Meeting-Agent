@@ -17,10 +17,10 @@ class QuestionOfficerResponse(BaseModel):
     """Python → Java 的出题响应体"""
     trace_id: str
     intent: Literal["GENERATE", "SMALL_TALK"]
-    question: list[str] = []
+    questions: list[str] = []
     resume_score: int | None = None
     resume_suggest: list[str] = []
     resume_type: str | None = None
-    question_source: Literal["kb+resume", "resume_only", "none"]
+    questions_source: Literal["kb+resume", "resume_only", "none"]
     small_talk: str | None = None
     steps_trace: dict = {}
