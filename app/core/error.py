@@ -32,6 +32,8 @@ class AgentError(Exception):
         业务代码只负责 raise，HTTP 状态与响应体由全局处理器统一生成
     """
     def __init__(self, code: ErrorCode, message: str):
+        if not isinstance(code, ErrorCode):
+            code = ErrorCode(code)
         self.code = code
         self.message = message
         super().__init__(self.message)
