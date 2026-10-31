@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.api import health
 from app.core.config import get_settings
+from app.core.exception import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.trace import TraceMiddleware
 
@@ -28,6 +29,8 @@ app = FastAPI(
 
 #注册 trace 中间件
 app.add_middleware(TraceMiddleware)
+
+register_exception_handlers(app)
 
 #设置统一 /v1前缀
 app.include_router(health.router, prefix="/v1")
