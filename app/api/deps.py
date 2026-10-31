@@ -5,7 +5,7 @@ Authorization: Bearer ${BANMA_AGENT_TOKEN}
 from fastapi import Header
 
 from app.core.config import get_settings
-from app.core.error import AgentError, ErrorCode
+from app.core.errors import AgentError, ErrorCode
 
 
 def require_token(authorization: str | None = Header(default=None)) -> None:

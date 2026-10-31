@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.api import health
 from app.core.config import get_settings
-from app.core.exception import register_exception_handlers
+from app.core.exception_handlers import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.trace import TraceMiddleware
 

@@ -9,7 +9,7 @@ from loguru import logger
 
 from fastapi import Request, FastAPI
 
-from app.core.error import ErrorCode, AgentError, HTTP_STATUS
+from app.core.errors import ErrorCode, AgentError, HTTP_STATUS
 from app.core.trace import get_trace_id, new_trace_id
 
 
