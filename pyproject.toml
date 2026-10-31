@@ -6,6 +6,7 @@ dependencies = [
     "fastapi>=0.162.0",
     "httpx>=0.28.1",
     "langchain-openai>=1.7.3",
+    "logger>=1.4",
     "loguru>=0.7.3",
     "pydantic>=2.14.1",
     "pydantic-settings>=2.16.1",
