@@ -13,6 +13,8 @@ def setup_logging(settings: Settings):
         sys.stdout,
         level=settings.log_level.upper(),
         serialize=True,
+        backtrace=True,  # 保留完整调用栈（排障需要）
+        diagnose=False,  # 关掉变量快照（脱敏要求）
     )
 
     logger.add(
@@ -22,5 +24,7 @@ def setup_logging(settings: Settings):
         rotation="00:00",
         retention="14 days",
         encoding="utf-8",
+        backtrace=True,  # 保留完整调用栈（排障需要）
+        diagnose=False,  # 关掉变量快照（脱敏要求）
     )
 
