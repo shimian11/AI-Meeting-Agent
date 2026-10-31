@@ -7,6 +7,8 @@ from fastapi.testclient import TestClient
 
 from app.core.errors import AgentError, ErrorCode, HTTP_STATUS
 from app.core.exception_handlers import register_exception_handlers
+from app.core.trace import TraceMiddleware
+
 
 # ---- 1) 纯单元：7 码必须全部有状态映射，一个都不能漏 ----
 def test_all_codes_have_status():
@@ -19,6 +21,7 @@ def test_all_codes_have_status():
 # ---- 2) 逐码验证 mini app 的响应 ----
 def _make_app() -> FastAPI:
     app = FastAPI()
+    app.add_middleware(TraceMiddleware)
     register_exception_handlers(app)
 
     # 为每个错误码挂一个"必定抛它"的临时路由
@@ -66,5 +69,33 @@ def test_trace_id_echoes_request_header():
     client = TestClient(_make_app(), raise_server_exceptions=False)
     given = "11111111222233334444555555555555"
     resp = client.get("/raise/INTERNAL_ERROR", headers={"X-Trace-Id": given})
+    assert resp.json()["error"]["trace_id"] == given
+    assert resp.headers["X-Trace-Id"] == given
+
+# ---- 5) 兜底：调用方没带 X-Trace-Id 时必须自动生成 32 位 hex ----
+def test_trace_id_generated_when_header_missing():
+    """缺 X-Trace-Id 时自动生成，且格式是 uuid4().hex。"""
+    client = TestClient(_make_app(), raise_server_exceptions=False)
+    tid = client.get("/raise/LLM_TIMEOUT").json()["error"]["trace_id"]
+
+    assert len(tid) == 32
+    assert all(c in "0123456789abcdef" for c in tid)
+
+
+# ---- 6) 装配回归：真实 app 必须真的装了中间件与处理器 ----
+def test_real_app_404_echoes_trace_id():
+    """
+    防回归：main.py 若漏装 TraceMiddleware 或漏注册 handler，此测试必红。
+    这是唯一覆盖"真实装配"的测试——mini app 只能证明处理器逻辑对，
+    证明不了 main.py 把它们接上了。
+    """
+    from app.main import app as real_app   # 函数内 import：避免模块级副作用影响其他用例
+
+    client = TestClient(real_app, raise_server_exceptions=False)
+    given = "aaaaaaaabbbbbbbbccccccccdddddddd"
+    resp = client.get("/v1/no-such-route", headers={"X-Trace-Id": given})
+
+    assert resp.status_code == 404
+    assert resp.json()["error"]["code"] == "INTERNAL_ERROR"
     assert resp.json()["error"]["trace_id"] == given
     assert resp.headers["X-Trace-Id"] == given
