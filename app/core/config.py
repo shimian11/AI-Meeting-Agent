@@ -14,8 +14,18 @@ class Settings(BaseSettings):
     log_level: str = "INFO"             # DEBUG | INFO | WARNING | ERROR
 
     agent_token: str = "change-me"      # Java与Python 内部鉴权
-    llm_api_key: str = ""
-    llm_base_url: str = "https://api.siliconflow.cn/v1"
+    # ---- 硅基流动：fast 档 + embedding 共用一把 Key ----
+    siliconflow_api_key: str = ""
+    siliconflow_base_url: str = "https://api.siliconflow.cn/v1"
+    siliconflow_model_fast: str = "Qwen/Qwen3.5-4B"
+    siliconflow_model_embed: str = "BAAI/bge-m3"  # 4D 用，先占位
+
+    # ---- DeepSeek 官方：strong 档 ----
+    deepseek_api_key: str = ""
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model_strong: str = "deepseek-flash"
+
+    llm_timeout_s: float = 30.0  # 单次调用超时
 
     trace_full: bool = False           # True 才在 span 里记 prompt 全文（生产必须 False）
     trace_sample: float = 0.1          # 成功请求采样率 0~1 成功则采样10%，失败全采样
