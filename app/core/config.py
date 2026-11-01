@@ -27,6 +27,11 @@ class Settings(BaseSettings):
 
     llm_timeout_s: float = 30.0  # 单次调用超时
 
+    # fast 档总开关：硅基免费 4B 实测首响应 71~90s（排队所致，关思考只省 5s），
+    # 默认关闭 → 所有调用直连 strong（DeepSeek 官方约 1.5s）。开启后才会走
+    # 「fast 失败 → 降级 strong」。依据见 ADR-014。
+    fast_enabled: bool = False
+
     trace_full: bool = False           # True 才在 span 里记 prompt 全文（生产必须 False）
     trace_sample: float = 0.1          # 成功请求采样率 0~1 成功则采样10%，失败全采样
 
