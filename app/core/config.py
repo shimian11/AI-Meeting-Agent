@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     trace_full: bool = False           # True 才在 span 里记 prompt 全文（生产必须 False）
     trace_sample: float = 0.1          # 成功请求采样率 0~1 成功则采样10%，失败全采样
 
+    #Qdrant地址：
+    qdrant_url: str = "http://localhost:6333"
 
 @lru_cache
 def get_settings() -> Settings:
