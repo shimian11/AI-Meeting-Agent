@@ -8,7 +8,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_prefix="BANMA_", extra="ignore")
+    # 配置分层：.env 放全环境共用项（Key/模型名/超时），.env.local 放随环境变化的项
+    # 覆盖顺序：真实环境变量 > .env.local > .env（Pydantic：后列文件优先）
+    model_config = SettingsConfigDict(
+        env_file=(".env", ".env.local"),
+        env_prefix="BANMA_",
+        extra="ignore",
+    )
 
     env: str = "local"                  # local | tests | prod
     log_level: str = "INFO"             # DEBUG | INFO | WARNING | ERROR
