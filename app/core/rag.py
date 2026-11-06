@@ -43,11 +43,12 @@ class RagRetriever:
                 logger.info(f"已创建 collection {COLLECTION_NAME}（{VECTOR_DIM} 维 / COSINE）")
 
             # 过滤字段建索引。不建则每次过滤扫全表，且【不报错】
-            self._client.create_payload_index(
-                collection_name=COLLECTION_NAME,
-                field_name="direction",
-                field_schema="keyword",
-            )
+            for field in ("direction", "doc_id"):
+                self._client.create_payload_index(
+                    collection_name=COLLECTION_NAME,
+                    field_name=field,
+                    field_schema="keyword",
+                )
             self._ensured = True
         except Exception as e:
             logger.warning(f"Qdrant 建表/建索引失败（本次检索降级）: {e}")
