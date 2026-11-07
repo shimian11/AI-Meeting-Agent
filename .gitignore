@@ -9,7 +9,8 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 
-# 密钥与环境变量：**所有 .env* 一律不入库**
+# 密钥与环境变量：**所有 .env* 一律不入库**（防 Key 随 push 泄露）
+# 唯一例外：.env.example 空值模板（末尾含 local/test/prod 三段）
 .env
 .env.*
 !.env.example
