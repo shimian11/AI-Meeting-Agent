@@ -27,6 +27,7 @@ class ResumeAnalysis(BaseModel):
     resume_suggest: list[str]
     resume_type: str
     rag_query: list[str]
+    resume_text: str = ""           # 合成简历定制题需要原文；
 
 def _fetch_resume(resume_url: str) -> bytes:
     """拉取简历字节。Content-Length 预检 + 实际长度复查，双保险"""
@@ -71,4 +72,6 @@ def analyze_resume(resume_url: str) -> ResumeAnalysis:
     write_span("agent.resume", trace_id=get_trace_id(),
                score=result.score, duration_ms=duration_ms)
     logger.info(f"resume score={result.score} type={result.resume_type} duration_ms={duration_ms}")
-    return result
+    return ResumeAnalysis(score=result.score, resume_suggest=result.resume_suggest,
+                          resume_type=result.resume_type, rag_query=result.rag_query,
+                          resume_text=text)
