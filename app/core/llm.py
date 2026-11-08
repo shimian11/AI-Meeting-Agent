@@ -21,14 +21,16 @@ class Tier(str, Enum):
 class Purpose(str, Enum):
     """调用目的"""
     CHAT = "chat"           #聊天
-    EVAL = "eval"           #评估
+    EVAL = "eval"           #评估（意图识别）
     GENERATE = "generate"   #出题
+    SCORE = "score"         #简历评分
 
 # 温度分档：对话 0.7 / 评分与意图 0.2 / 出题 0.5
 TEMPERATURE: dict[Purpose, float] = {
     Purpose.CHAT: 0.7,
     Purpose.EVAL: 0.2,
     Purpose.GENERATE: 0.5,
+    Purpose.SCORE: 0.2,
 }
 
 # 允许先打 fast 的聊天和评估；出题/评分直接 strong
