@@ -2,31 +2,21 @@
 全局配置：加载环境变量。
 读取顺序：环境变量>.env文件
 """
-import os
 
 from anyio.functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def _app_env() -> str:
-    """
-    当前环境 profile：读进程环境变量 BANMA_ENV，缺省 local；非法值拒绝启动。
-    """
-    env = os.getenv("BANMA_ENV", "local")
-    if env not in ("local", "test", "prod"):
-        raise RuntimeError(f"非法 BANMA_ENV={env!r}，只允许 local/test/prod")
-    return env
-
 class Settings(BaseSettings):
     # 配置分层：.env 放全环境共用项（Key/模型名/超时），.env.local 放随环境变化的项
     # 覆盖顺序：真实环境变量 > .env.local > .env（Pydantic：后列文件优先）
     model_config = SettingsConfigDict(
-        env_file=(".env", f".env.{_app_env()}"),
+        env_file=(".env", ".env.local"),
         env_prefix="BANMA_",
         extra="ignore",
     )
 
-    env: str = _app_env()                 # local | tests | prod
+    env: str = "local"                  # local | tests | prod
     log_level: str = "INFO"             # DEBUG | INFO | WARNING | ERROR
 
     agent_token: str = "change-me"      # Java与Python 内部鉴权
