@@ -13,7 +13,7 @@ def _load(name: str) -> dict:
 
 def test_request_sample_passes():
     req = QuestionOfficerRequest.model_validate(_load("question_officer_req.json"))
-    assert req.direction_default == "后端开发"
+    assert req.direction_default is None   # 2026-11-08 四级语义链：None = Java 未声明
     assert req.history_digest == ["第1轮: Java内存模型相关2题"]
     assert req.resume_url.startswith("http://minio:9000/")
 
