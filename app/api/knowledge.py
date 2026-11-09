@@ -1,10 +1,11 @@
 """题库入库接口：POST /v1/knowledge/ingest"""
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import require_token
 from app.core.ingest import ingest_document
 from app.schemas.knowledge import KnowledgeIngestResponse, KnowledgeIngestRequest
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_token)])
 
 @router.post("/knowledge/ingest", response_model=KnowledgeIngestResponse)
 def ingest(req: KnowledgeIngestRequest) -> KnowledgeIngestResponse:
