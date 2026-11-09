@@ -36,7 +36,6 @@ class DirectionOutput(BaseModel):
 
 def _llm_normalize(text: str, source: str) -> str | None:
     """LLM 语义归一。返回方向，或 None（NONE / 解析失败 → 降级下一来源）。
-
     服务不可用（LLM_TIMEOUT / LLM_ERROR）直接 raise——后续来源同样依赖模型，
     再试无意义，提前止损。
     """
@@ -56,6 +55,12 @@ def _llm_normalize(text: str, source: str) -> str | None:
             logger.warning(f"direction LLM 归一解析失败 source={source} text={text!r}，降级下一来源")
             return None
         raise
+
+    if result.direction == "NONE":
+        # 关键行：话术/描述里没有方向信息 → 降级下一来源，绝不拿 NONE 当方向用
+        logger.info(f"direction LLM 判定无方向 source={source} text={text!r}，降级下一来源")
+        return None
+
     duration_ms = round((time.perf_counter() - start) * 1000, 1)
 
     write_span("agent.direction", trace_id=get_trace_id(),
