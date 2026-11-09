@@ -1,8 +1,9 @@
 """
-出题官 step3：方向归一化。三情况：
-（1）无简历/空描述 → direction_default 原样透传（须为 4 枚举之一，非法即拒）；
-（2）本地关键词命中 → 直接归一（零成本）；
-（3）关键词未命中 → LLM 归一（结构化输出锁 4 枚举）；失败 → 原样上抛。
+出题官 step3：方向归一化。四级来源循环（2026-11-08 定稿）：
+（1）resume_type：关键词命中 → 归一；未命中 → LLM 归一；
+（2）direction_default：合法值透传（非法值不透传，降级下一来源）；
+（3）user_input：关键词命中 → 归一；未命中 → LLM 归一（话术无方向输出 NONE）；
+（4）全落空 → VALIDATION_ERROR。
 宁可显式失败，不编造数据——错方向会静默污染答题/评分/报告全链路。
 """
 import time
@@ -30,49 +31,68 @@ _KEYWORDS: dict[str, tuple[str, ...]] = {
 }
 
 class DirectionOutput(BaseModel):
-    """LLM 归一化 schema：只许从 4 枚举选一。"""
-    direction: Direction
+    """LLM 归一化 schema：NONE = 该文本没有指向任何方向（不强迫瞎选）。"""
+    direction: Direction | Literal["NONE"]
 
-def normalize_direction(resume_type: str | None, direction_default: str) -> str:
-    """归一到 4 方向；彻底失败上抛 STRUCTURE_PARSE_ERROR，绝不硬兜底。"""
-    #（1）无简历/空描述 -> default原样透传
-    if not resume_type or not resume_type.strip():
-        if direction_default not in DIRECTIONS:
-            #透传枚举外值会让 Qdrant filter 命中 0 → 静默空召回，必须现在就炸
-            raise AgentError(
-                ErrorCode.VALIDATION_ERROR,
-                f"direction_default={direction_default!r} 不在四方向枚举内",
-            )
-        logger.info(f"direction=default({direction_default}) reason=no_resume_type")
-        return direction_default
+def _llm_normalize(text: str, source: str) -> str | None:
+    """LLM 语义归一。返回方向，或 None（NONE / 解析失败 → 降级下一来源）。
 
-    text = resume_type.lower()
-
-    #（2）本地关键词命中 -> 零成本归一
-    for direction, words in _KEYWORDS.items():
-        if any(w in text for w in words):
-            logger.info(f"direction={direction} reason=keyword resume_type={resume_type!r}")
-            return direction
-
-    #（3）关键词未命中 ->LLM 语义归一；失败原样上抛
+    服务不可用（LLM_TIMEOUT / LLM_ERROR）直接 raise——后续来源同样依赖模型，
+    再试无意义，提前止损。
+    """
     start = time.perf_counter()
     try:
         result: DirectionOutput = structured_call(
             schema=DirectionOutput,
             messages=[
                 SystemMessage(content=DIRECTION_SYSTEM_PROMPT),
-                HumanMessage(content=f"简历方向描述：{resume_type}"),
+                HumanMessage(content=text),
             ],
             purpose=Purpose.EVAL,
         )
-    except AgentError:
-        # 关键行：吞掉这里换成 return "后端开发" = test_llm_failure_raises_not_fallback 必红
-        logger.warning(f"direction normalize failed resume_type={resume_type!r}")
+    except AgentError as exc:
+        if exc.code is ErrorCode.STRUCTURE_PARSE_ERROR:
+            # 关键行：模型两次都给不出合法枚举 → 降级下一来源，不硬兜底
+            logger.warning(f"direction LLM 归一解析失败 source={source} text={text!r}，降级下一来源")
+            return None
         raise
     duration_ms = round((time.perf_counter() - start) * 1000, 1)
 
     write_span("agent.direction", trace_id=get_trace_id(),
                direction=result.direction, duration_ms=duration_ms)
-    logger.info(f"direction={result.direction} reason=llm duration_ms={duration_ms}")
+    logger.info(f"direction={result.direction} reason=llm source={source} duration_ms={duration_ms}")
     return result.direction
 
+def normalize_direction(resume_type: str | None, direction_default: str | None,
+                        user_input: str) -> str:
+    """四级语义链：简历推导 → 用户声明 → 话题归一 → 显式失败。禁止硬兜底。"""
+    # (来源名, 候选文本)；None/空白 = 该来源缺位，跳过
+    sources = (("resume_type", resume_type), ("direction_default", direction_default),
+               ("user_input", user_input))
+    for source, candidate in sources:
+        if not candidate or not candidate.strip():
+            continue
+        text = candidate.lower()
+
+        # ① 关键词命中 → 零成本归一
+        for direction, words in _KEYWORDS.items():
+            if any(w in text for w in words):
+                logger.info(f"direction={direction} source={source} reason=keyword candidate={candidate!r}")
+                return direction
+
+        # ② default 来源：只透传合法值；非法值不透传（防 Qdrant 静默空召回）也不进 LLM
+        if source == "direction_default":
+            logger.warning(f"direction_default={candidate!r} 不在四方向枚举内，尝试下一来源")
+            continue
+
+        # ③ 关键词未命中 → LLM 语义归一（NONE/解析失败降级下一来源，服务异常上抛）
+        llm_hit = _llm_normalize(candidate, source)
+        if llm_hit:
+            return llm_hit
+        # None = 该来源给不出方向 → 落下一来源
+
+    raise AgentError(
+        ErrorCode.VALIDATION_ERROR,
+        f"方向归一失败: resume_type={resume_type!r}, default={direction_default!r}，"
+        f"请指定方向，合法方向={list(DIRECTIONS)}",
+    )
