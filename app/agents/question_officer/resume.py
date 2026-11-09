@@ -22,7 +22,6 @@ MAX_RESUME_BYTES = 20 * 1024 * 1024
 MIN_TEXT_CHARS = 50
 
 class ResumeAnalysis(BaseModel):
-    """TODO step2中间产物，后面装配时映射到QuestionOfficerResponse"""
     score: int = Field(ge=0, le=100)
     resume_suggest: list[str]
     resume_type: str
