@@ -10,7 +10,7 @@ class QuestionOfficerRequest(BaseModel):
     session_id: str  # 必填：面试会话 ID
     user_input: str  # 必填：用户本轮话术
     resume_url: str | None = None  # 可空：MinIO 预签名 URL（未传简历 = null）
-    direction_default: str = "后端开发"  # 可选：无简历时的兜底方向
+    direction_default: str | None = None  # None = Java 未声明方向；Python 走四级语义链（direction.py），禁止假设默认方向
     history_digest: list[str] = []  # 可选：历史轮次摘要（出题去重用）
 
 class QuestionOfficerResponse(BaseModel):
