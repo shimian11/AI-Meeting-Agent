@@ -31,7 +31,7 @@ def embed_texts(texts: list[str], batch_size: int = BATCH_SIZE) -> list[list[flo
             resp = client.post(
                 url,
                 headers=headers,
-                json={"model": s.siliconflow_model_embed, "batch": batch},
+                json={"model": s.siliconflow_model_embed, "input": batch},
             )
             if resp.status_code != 200:
                 raise AgentError(

@@ -1,0 +1,20 @@
+{"id": "i001", "input": "根据我的简历出几道后端题", "expected": "GENERATE", "note": "明确出题 + 方向"}
+{"id": "i002", "input": "帮我出十道 Java 面试题", "expected": "GENERATE", "note": "明确出题 + 数量 + 技术栈"}
+{"id": "i003", "input": "我想练习一下前端", "expected": "GENERATE", "note": "练习意图"}
+{"id": "i004", "input": "测试一下我的水平", "expected": "GENERATE", "note": "测试意图"}
+{"id": "i005", "input": "评估一下我这份简历", "expected": "GENERATE", "note": "评估简历"}
+{"id": "i006", "input": "开始面试吧", "expected": "GENERATE", "note": "开始面试"}
+{"id": "i007", "input": "再来几道", "expected": "GENERATE", "note": "边界：省略主语，延续上文"}
+{"id": "i008", "input": "继续", "expected": "GENERATE", "note": "边界：极短，靠上下文"}
+{"id": "i009", "input": "换一批难点的", "expected": "GENERATE", "note": "边界：隐含出题"}
+{"id": "i010", "input": "我想找后端工作，帮我准备一下", "expected": "GENERATE", "note": "边界：间接表达"}
+{"id": "i011", "input": "你好", "expected": "SMALL_TALK", "note": "寒暄"}
+{"id": "i012", "input": "你叫什么名字", "expected": "SMALL_TALK", "note": "询问身份"}
+{"id": "i013", "input": "你是什么模型", "expected": "SMALL_TALK", "note": "询问技术细节"}
+{"id": "i014", "input": "谢谢", "expected": "SMALL_TALK", "note": "礼貌用语"}
+{"id": "i015", "input": "今天天气不错", "expected": "SMALL_TALK", "note": "无关闲聊"}
+{"id": "i016", "input": "我觉得面试好难啊", "expected": "SMALL_TALK", "note": "情绪表达，非出题"}
+{"id": "i017", "input": "你能做什么", "expected": "SMALL_TALK", "note": "能力询问"}
+{"id": "i018", "input": "嗯", "expected": "SMALL_TALK", "note": "边界：无信息量"}
+{"id": "i019", "input": "随便聊聊", "expected": "SMALL_TALK", "note": "边界：明确要闲聊"}
+{"id": "i020", "input": "讲个笑话", "expected": "SMALL_TALK", "note": "边界：娱乐请求，非出题"}
