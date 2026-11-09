@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import health, knowledge
+from app.api import health, knowledge, question_officer
 from app.core.config import get_settings
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging import setup_logging
@@ -35,6 +35,7 @@ register_exception_handlers(app)
 #设置统一 /v1前缀
 app.include_router(health.router, prefix="/v1")
 app.include_router(knowledge.router, prefix="/v1")
+app.include_router(question_officer.router, prefix="/v1")
 
 @app.get("/")
 def root():
