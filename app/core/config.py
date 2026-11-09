@@ -2,21 +2,30 @@
 全局配置：加载环境变量。
 读取顺序：环境变量>.env文件
 """
+import os
 
 from anyio.functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+def _app_env() -> str:
+    """读 BANMA_ENV 决定加载哪个 profile 文件。只当开关，不当配置值。
+    缺省 local（本机开发不设任何环境变量）；非法值直接拒绝启动，防拼错静默失控。"""
+    env = os.getenv("BANMA_ENV", "local")
+    if env not in ("local", "test", "prod"):
+        raise RuntimeError(f"BANMA_ENV 非法: {env!r}，合法值: local / test / prod")
+    return env
 
 class Settings(BaseSettings):
-    # 配置分层：.env 放全环境共用项（Key/模型名/超时），.env.local 放随环境变化的项
-    # 覆盖顺序：真实环境变量 > .env.local > .env（Pydantic：后列文件优先）
+    # 配置分层：.env 放全环境共用项（Key/模型名/超时）；.env.{BANMA_ENV} 放该环境差异项
+    # 覆盖顺序：真实环境变量 > .env.{BANMA_ENV} > .env（Pydantic：后列文件优先）
+    # 切环境：在 shell 里设 BANMA_ENV。写进 .env 无效 —— env_file 在类定义时就求值了
     model_config = SettingsConfigDict(
-        env_file=(".env", ".env.local"),
+        env_file=(".env", f".env.{_app_env()}"),
         env_prefix="BANMA_",
         extra="ignore",
     )
 
-    env: str = "local"                  # local | tests | prod
+    env: str = "local"                  # local | test | prod
     log_level: str = "INFO"             # DEBUG | INFO | WARNING | ERROR
 
     agent_token: str = "change-me"      # Java与Python 内部鉴权
